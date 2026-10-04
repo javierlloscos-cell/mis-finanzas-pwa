@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10233f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mis finanzas">
+  <meta name="description" content="Panel privado y local para consultar ingresos y gastos.">
+  <title>Mis finanzas</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><div class="eyebrow">Control privado</div><h1>Mis finanzas</h1></div>
+    <button id="filterBtn" class="filterTrigger" type="button" aria-haspopup="dialog"><span>Filtros</span><b id="filterCount" class="filterCount hidden">0</b></button>
+  </header>
+  <main>
+    <section id="emptyState" class="emptyState hidden">
+      <div class="emptyIcon" aria-hidden="true">€</div>
+      <h2>Importa tu histórico</h2>
+      <p>El archivo se procesa y se guarda únicamente en este dispositivo. No se envía a ningún servidor.</p>
+      <label class="primaryBtn">Elegir archivo JSON<input id="importFileEmpty" type="file" accept="application/json,.json" hidden></label>
+      <small>La próxima importación sustituirá por completo a la anterior.</small>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <div class="datasetBar"><span id="datasetLabel">Histórico cargado</span><button id="dataBtn" class="textBtn" type="button">Datos</button></div>
+      <section id="view-overview" class="view active">
+        <div class="kpiGrid">
+          <article class="kpi primary"><span>Gasto total</span><strong id="kpiSpend">—</strong><small id="kpiPeriod">—</small></article>
+          <article class="kpi income"><span>Ingresos totales</span><strong id="kpiIncome">—</strong><small>sin transferencias</small></article>
+          <article class="kpi"><span>Balance</span><strong id="kpiBalance">—</strong><small>ingresos − gastos</small></article>
+          <article class="kpi"><span>Media mensual</span><strong id="kpiMonthAvg">—</strong><small id="kpiMonthAvgNote">—</small></article>
+          <article class="kpi"><span>Media diaria</span><strong id="kpiDayAvg">—</strong><small id="kpiDayAvgNote">—</small></article>
+          <article class="kpi"><span>Operaciones</span><strong id="kpiOps">—</strong><small>movimientos visibles</small></article>
+          <article class="kpi"><span>Media por operación</span><strong id="kpiAvg">—</strong><small>operaciones de gasto</small></article>
+          <article class="kpi"><span>Mayor categoría</span><strong id="kpiTopCat">—</strong><small id="kpiTopCatAmount">—</small></article>
+          <article class="kpi"><span>Mes con mayor gasto</span><strong id="kpiTopMonth">—</strong><small id="kpiTopMonthAmount">—</small></article>
+        </div>
+
+        <article class="card">
+          <div class="cardHeader"><div><h2>Evolución mensual</h2><p>Gasto neto contabilizado. Toca un mes para ver su detalle.</p></div></div>
+          <div id="timeline" class="timeline" aria-label="Evolución mensual del gasto"></div>
+        </article>
+
+        <article class="card">
+          <div class="cardHeader"><div><h2>Balance mensual</h2><p>Ingresos, gastos y balance por mes.</p></div></div>
+          <div class="chartLegend"><span class="legendIncome">Ingresos</span><span class="legendSpend">Gastos</span><span class="legendBalance">Balance</span></div>
+          <div id="balanceChart" class="balanceChart" aria-label="Gráfico de balance mensual"></div>
+          <div class="balanceHead" aria-hidden="true"><span>Mes</span><span>Ingresos</span><span>Gastos</span><span>Balance</span></div>
+          <div id="monthlyBalance" class="monthlyBalance"></div>
+        </article>
+
+        <article class="card">
+          <div class="cardHeader"><div><h2>Gastos por categoría</h2><p>Distribución del gasto filtrado</p></div></div>
+          <div id="categoryBars" class="barList"></div>
+        </article>
+        <article class="card">
+          <div class="cardHeader"><div><h2>Principales comercios</h2><p>Ordenados por gasto neto</p></div></div>
+          <div id="merchantBars" class="barList"></div>
+        </article>
+      </section>
+
+      <section id="view-categories" class="view"><article class="card flush"><div class="cardHeader padded"><div><h2>Categorías</h2><p>Toca una categoría para aplicarla como filtro</p></div></div><div id="categoryList" class="categoryList"></div></article></section>
+
+      <section id="view-compare" class="view">
+        <article class="card">
+          <div class="cardHeader"><div><h2>Comparar periodos</h2><p id="compareNote">Periodo A frente a periodo B</p></div></div>
+          <div class="presetRow" role="group" aria-label="Comparaciones rápidas">
+            <button class="presetBtn active" data-preset="month" type="button">Mes vs anterior</button>
+            <button class="presetBtn" data-preset="3m" type="button">3 vs 3 meses</button>
+            <button class="presetBtn" data-preset="6m" type="button">6 vs 6 meses</button>
+            <button class="presetBtn" data-preset="year" type="button">Año vs anterior</button>
+          </div>
+          <div class="compareGrid">
+            <fieldset class="periodBox"><legend>Periodo A</legend><div class="periodInputs"><label>Desde<input type="date" id="aFrom"></label><label>Hasta<input type="date" id="aTo"></label></div></fieldset>
+            <fieldset class="periodBox"><legend>Periodo B</legend><div class="periodInputs"><label>Desde<input type="date" id="bFrom"></label><label>Hasta<input type="date" id="bTo"></label></div></fieldset>
+          </div>
+          <div id="compareSummary" class="compareSummary"></div>
+        </article>
+        <article class="card"><div class="cardHeader"><div><h2>Comparación por categorías</h2><p>Periodo A frente a B</p></div></div><div class="compareTableHead"><span>Categoría</span><span>A</span><span>B</span><span>Diferencia</span></div><div id="compareCategories" class="compareCategories"></div></article>
+      </section>
+
+      <section id="view-movements" class="view">
+        <div class="searchWrap"><input id="searchInput" type="search" placeholder="Buscar comercio, concepto, categoría…" autocomplete="off" aria-label="Buscar movimientos"></div>
+        <div id="movementCount" class="sectionNote"></div><div id="movementList" class="movementList"></div>
+      </section>
+
+      <section id="view-settings" class="view">
+        <article class="card"><h2>Datos del dispositivo</h2><p class="muted">El histórico se guarda en IndexedDB. Al actualizar, el nuevo JSON completo sustituye al anterior: nunca se mezclan archivos.</p><label class="primaryBtn block">Actualizar histórico<input id="importFileSettings" type="file" accept="application/json,.json" hidden></label><button id="clearDataBtn" class="dangerBtn block" type="button">Eliminar datos locales</button></article>
+        <article class="card"><h2>Privacidad</h2><p class="muted">Sin cuentas, analítica, trackers ni servicios externos. Tus movimientos permanecen en este navegador.</p></article>
+        <article class="card"><h2>Instalar en el móvil</h2><p class="muted">iPhone: Safari → Compartir → Añadir a pantalla de inicio.<br>Android: Chrome → menú → Instalar aplicación.</p><button id="installBtn" class="secondaryBtn block hidden" type="button">Instalar aplicación</button><p id="offlineStatus" class="statusLine" role="status"></p></article>
+      </section>
+    </section>
+  </main>
+
+  <nav id="bottomNav" class="bottomNav hidden" aria-label="Navegación principal">
+    <button data-view="overview" class="active" type="button"><span aria-hidden="true">⌂</span>Resumen</button>
+    <button data-view="categories" type="button"><span aria-hidden="true">▦</span>Categorías</button>
+    <button data-view="compare" type="button"><span aria-hidden="true">⇄</span>Comparar</button>
+    <button data-view="movements" type="button"><span aria-hidden="true">≡</span>Movimientos</button>
+    <button data-view="settings" type="button"><span aria-hidden="true">⚙</span>Datos</button>
+  </nav>
+
+  <div id="filterSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+    <div class="sheetBackdrop" data-close-sheet></div><div class="sheetPanel"><div class="sheetHandle"></div>
+      <div class="sheetHeader"><h2 id="filterTitle">Filtros</h2><button data-close-sheet class="textBtn" type="button">Cerrar</button></div>
+      <p class="filterHint">Los resultados se actualizan al cambiar cualquier campo.</p>
+      <div class="filterGrid">
+        <label>Año<select id="fYear"></select></label><label>Mes<select id="fMonth"></select></label>
+        <label>Desde<input id="fFrom" type="date"></label><label>Hasta<input id="fTo" type="date"></label>
+        <label>Categoría<select id="fCategory"></select></label><label>Comercio<select id="fMerchant"></select></label>
+        <label>Medio de pago<select id="fPayment"></select></label><label>Cuenta o tarjeta<select id="fAccount"></select></label>
+        <label>Tipo de movimiento<select id="fType"></select></label>
+      </div>
+      <div class="sheetActions"><button id="resetFilters" class="secondaryBtn" type="button">Restablecer filtros</button><button data-close-sheet class="primaryBtn" type="button">Ver resultados</button></div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <script src="./logic.js" defer></script><script src="./app.js" defer></script>
+</body>
+</html>

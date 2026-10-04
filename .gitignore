@@ -1,0 +1,30 @@
+# Datos financieros y exportaciones locales
+*.json
+*.csv
+*.tsv
+*.xls
+*.xlsx
+*.ofx
+*.qfx
+*.qif
+*.mt940
+*.finanzas
+datos/
+data/
+imports/
+exports/
+backups/
+
+# Excepciones: metadatos estáticos de la PWA
+!package.json
+!package-lock.json
+
+# Archivos del sistema y herramientas
+.DS_Store
+Thumbs.db
+node_modules/
+coverage/
+test-results/
+playwright-report/
+*.log
+.env*
